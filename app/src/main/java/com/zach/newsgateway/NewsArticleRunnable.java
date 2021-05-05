@@ -1,6 +1,8 @@
 package com.zach.newsgateway;
 
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,10 +23,10 @@ public class NewsArticleRunnable implements Runnable{
     private String id;
     private final String KEY = "dbc1977cd9764615be77a2b8c5df2375";
 
-
     public NewsArticleRunnable(NewsService nService, String id) {
         this.nService = nService;
         this.id = id;
+        Log.d(TAG, this.id);
     }
 
     private void results(String s) {
@@ -87,7 +89,12 @@ public class NewsArticleRunnable implements Runnable{
 
                 if (!article.getString("author").trim().isEmpty()
                 && !article.getString("author").trim().equals("null")) {
-                    author = article.getString("author");
+                    author = article.getString("author") + " ";
+                    if (this.id.equals("buzzfeed")) {
+                        author = "Buzzfeed Staff "; // I can't be bothered right now to parse
+                        // a json array and object from a string. The difference in format is???
+
+                    }
                 } else author = null;
 
                 if (!article.getString("title").trim().isEmpty()

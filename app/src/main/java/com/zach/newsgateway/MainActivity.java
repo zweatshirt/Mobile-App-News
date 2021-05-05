@@ -14,11 +14,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -44,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private final HashMap<String, Source> srcs = new HashMap<String, Source>();
     private final ArrayList<String> srcNames = new ArrayList<>();
     private ArrayList<String> cats = new ArrayList<>();
-    private final List<Article> articles = new ArrayList<>();
+    private static List<Article> articles = new ArrayList<>();
     private Menu opt_menu;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -55,23 +60,25 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> arrayAdapter;
     private String currArticle;
     private String currSrcName;
-    private final String[] colorStrs = {"#258122", "#E9CC0E", "#6D17BE", "#000000",
-            "#00FA80", "#FF0073", "70FFF5", "#781814", "C9B624", "#717D7E"};
+//    private final String[] colorStrs = {"#258122", "#E9CC0E", "#6D17BE", "#000000",
+//            "#00FA80", "#FF0073", "70FFF5", "#781814", "C9B624", "#717D7E"};
+    public static int[] NameColors = { Color.RED, Color.BLUE, Color.YELLOW, Color.LTGRAY, Color.GREEN,
+    Color.CYAN, Color.MAGENTA, Color.rgb(255, 192, 203),
+    Color.rgb(255, 140, 0)};
 
     public static final String ACTION_MSG_TO_SERVICE = "ACTION_MSG_TO_SERVICE";
     public static final String ACTION_NEWS_STORY = "ACTION_NEWS_STORY";
     private NewsService nService;
     private NewsReceiver nReceiver;
-
-
+//    protected static int currIdx;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Display disp = getWindowManager().getDefaultDisplay();
+        //Display disp = getWindowManager().getDefaultDisplay();
+        setTitle("News Gateway");
 
         nService = new NewsService();
         nReceiver = new NewsReceiver();
@@ -90,13 +97,10 @@ public class MainActivity extends AppCompatActivity {
                 R.string.open, R.string.close
         );
 
-
-
         fragments = new ArrayList<>();
         pageAdapter = new MyPageAdapter(getSupportFragmentManager());
         pager = findViewById(R.id.view_pager);
         pager.setAdapter(pageAdapter);
-
         pager.setBackgroundResource(R.drawable.news);
 
         Intent intent = new Intent(MainActivity.this, NewsService.class);
@@ -134,15 +138,9 @@ public class MainActivity extends AppCompatActivity {
 
         String currSrcStr = srcNames.get(position);
         Source currSrc = srcs.get(currSrcStr);
-//        String id = currSrc.getId();
-//        currName = currSrc.getName();
-
-        // fix
-        // start new thread to grab  articles based on src
-//        new Thread(new NewsArticleRunnable(this, id)).start();
-        if (currSrc != null && currSrc.getName() != null) {
-            setTitle(currSrc.getName());
-        }
+        // yolo (to be fixed later)
+        currSrcName = currSrc.getName();
+        //setTitle(currSrcName);
 
         Intent intent = new Intent(ACTION_MSG_TO_SERVICE);
         intent.putExtra("source", currSrc);
@@ -164,7 +162,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onOptionsItemSelected: toggle" + item);
             return true;
         }
-        setTitle(item.getTitle());
+        //setTitle(item.getTitle());
+        setTitle("News Gateway");
         srcNames.clear();
         if (item.getTitle().toString().equals("All")) {
             for (Source source : srcs.values()) {
@@ -180,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // new Thread(new NewsSourceRunnable(this, (String) item.getTitle()));
         Collections.sort(srcNames);
+        pager.removeAllViews();
         pager.setBackgroundResource(R.drawable.news);
         arrayAdapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(item);
@@ -189,7 +189,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
         toggle.syncState();
     }
 
@@ -200,31 +199,6 @@ public class MainActivity extends AppCompatActivity {
         toggle.onConfigurationChanged(newConfig);
     }
 
-    public void setArticles(ArrayList<Article> articles) {
-        this.articles.clear();
-        this.articles.addAll(articles);
-        setTitle(currSrcName); // current source name
-
-        for (int i = 0; i < pageAdapter.getCount(); i ++) {
-            pageAdapter.notifyChangeInPosition(i);
-        }
-        fragments.clear();
-        for (int i = 0; i < articles.size(); i ++) {
-            fragments.add(ArticlesFragment.newInstance(articles.get(i), i + 1, articles.size()));
-        }
-
-        pageAdapter.notifyDataSetChanged();
-        pager.setCurrentItem(0);
-    }
-
-//    private void colorItem(MenuItem item) {
-//
-//
-//    }
-
-
-    // set by category
-    // switch to pass in list of sources and list of categories
     public void setSrcs(ArrayList<Source> srcs, ArrayList<String> cats) {
         // pass in list of Sources and list of categories
         this.srcs.clear();
@@ -245,12 +219,12 @@ public class MainActivity extends AppCompatActivity {
         for (String cat : this.cats) {
             upperCat = cat.substring(0, 1).toUpperCase() + cat.substring(1);
             MenuItem item = opt_menu.add(upperCat);
+     //       SpannableString s = new SpannableString(upperCat);
+//            s.setSpan(new ForegroundColorSpan(), 0, s.length(), 0);
+            item.setTitle(upperCat);
             // implement
             //colorItem(item);
         }
-
-
-//
 //        // ArrayList<String> temp = new ArrayList<>(srcs.keySet());
 //
 //        Collections.sort(temp);
@@ -261,18 +235,12 @@ public class MainActivity extends AppCompatActivity {
 //
 //
 //      ArrayList<String> names = new ArrayList<>(hashM.keySet());
-        // this stuff needs to get moved to onCreate at some point
+
         arrayAdapter = new ArrayAdapter<String>(this, R.layout.drawer_item, srcNames);
         mDrawerList.setAdapter(arrayAdapter);
-//
-
-        // might not be necessary
-//        if (getSupportActionBar() != null) {
-//            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//           getSupportActionBar().setHomeButtonEnabled(true);
-//        }
 
     }
+
 
     private void sortSources(ArrayList<Source> srcList) {
         srcList.sort(new Comparator<Source>() {
@@ -283,10 +251,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // build receiver
-    // builder service
-    // activity has a receiver specific to service
-    // mostly done but needs to be tested
     public class NewsReceiver extends BroadcastReceiver {
 
         @Override
@@ -301,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
                 // might crash
                 if (intent.hasExtra("articles")) {
                     articles = (ArrayList<Article>) intent.getSerializableExtra("articles");
+//                    MainActivity.articles = articles;
                     setTitle(currSrcName); // current source name
                     redoFragments(articles);
                 }
@@ -332,6 +297,8 @@ public class MainActivity extends AppCompatActivity {
 
         MyPageAdapter(FragmentManager fm) {
             super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+            if (currSrcName != null)
+                setTitle(currSrcName);
         }
 
         @Override

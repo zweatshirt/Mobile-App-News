@@ -35,7 +35,7 @@ public class NewsService extends Service {
 
         new Thread(() -> {
             while(running) {
-                Log.d(TAG, "in loop");
+                // Log.d(TAG, "in loop");
                 if (articles.isEmpty()) {
                     try {
                         Thread.sleep(250);

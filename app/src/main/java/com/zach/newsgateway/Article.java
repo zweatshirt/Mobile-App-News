@@ -19,7 +19,7 @@ public class Article implements Serializable {
     private String url;
     private String urlToImage;
     private String publishedAt;
-    private Drawable img;
+//    private Drawable img;
 
     public Article(String auth, String t, String desc, String url,
                    String urlImg, String publshedAt) {
@@ -30,20 +30,21 @@ public class Article implements Serializable {
         this.urlToImage = urlImg;
         this.publishedAt = publshedAt;
 
-        try {
-            InputStream input = new java.net.URL(urlToImage).openStream();
-            SVG svg = SVG.getFromInputStream(input);
-            this.img = new PictureDrawable(svg.renderToPicture());
-        } catch (Exception e) {
-            this.img = null;
-            e.printStackTrace();
-        }
+        // useless code but just going to leave it here anyway
+//        try {
+//            InputStream input = new java.net.URL(urlToImage).openStream();
+//            SVG svg = SVG.getFromInputStream(input);
+//            this.img = new PictureDrawable(svg.renderToPicture());
+//        } catch (Exception e) {
+//            this.img = null;
+//            e.printStackTrace();
+//        }
 
     }
 
-    public Drawable getDrawable() {
-        return img;
-    }
+//    public Drawable getDrawable() {
+//        return img;
+//    }
 
     public String getAuthor() {
         return author;
